@@ -1,0 +1,57 @@
+{
+  "staff": [
+    { "id": "f1", "name": "Michael Koslowski" },
+    { "id": "f2", "name": "Dr. Marcel Oehme" },
+    { "id": "f3", "name": "Dr. Maximilian Mayrhofer-Schmid" },
+    { "id": "f4", "name": "Der dämliche Schwachkopf" },
+    { "id": "f5", "name": "Julius" }
+  ],
+  "state": {
+    "planningMonth": "2026-10",
+    "slotsPerDay": 1,
+    "windowOpen": true,
+    "windowStart": "2026-09-04",
+    "windowEnd": "2026-09-07"
+  },
+  "entries": {
+    "f1": {
+      "name": "Michael Koslowski",
+      "personId": "f1",
+      "prefs": {"1":"can","2":"can","3":"rathernot","4":"cannot","5":"want","6":"want","7":"can","8":"rathernot","9":"cannot","10":"want","11":"can","12":"can","13":"rathernot","14":"cannot","15":"want","16":"can","17":"can","18":"rathernot","19":"cannot","20":"want","21":"can","22":"can","23":"rathernot","24":"cannot","25":"want","26":"can","27":"can","28":"rathernot","29":"cannot","30":"want","31":"can"}
+    },
+    "f2": {
+      "name": "Dr. Marcel Oehme",
+      "personId": "f2",
+      "prefs": {"1":"rathernot","2":"cannot","3":"want","4":"can","5":"can","6":"rathernot","7":"cannot","8":"want","9":"can","10":"can","11":"rathernot","12":"cannot","13":"want","14":"can","15":"can","16":"rathernot","17":"cannot","18":"want","19":"can","20":"can","21":"rathernot","22":"cannot","23":"want","24":"can","25":"can","26":"rathernot","27":"cannot","28":"want","29":"can","30":"can","31":"rathernot"}
+    },
+    "f3": {
+      "name": "Dr. Maximilian Mayrhofer-Schmid",
+      "personId": "f3",
+      "prefs": {"1":"want","2":"can","3":"can","4":"rathernot","5":"cannot","6":"want","7":"can","8":"can","9":"rathernot","10":"cannot","11":"want","12":"can","13":"can","14":"rathernot","15":"cannot","16":"want","17":"can","18":"can","19":"rathernot","20":"cannot","21":"want","22":"can","23":"can","24":"rathernot","25":"cannot","26":"want","27":"can","28":"can","29":"rathernot","30":"cannot","31":"want"}
+    },
+    "f4": {
+      "name": "Der dämliche Schwachkopf",
+      "personId": "f4",
+      "prefs": {"1":"can","2":"rathernot","3":"cannot","4":"want","5":"can","6":"can","7":"rathernot","8":"cannot","9":"want","10":"can","11":"can","12":"rathernot","13":"cannot","14":"want","15":"can","16":"can","17":"rathernot","18":"cannot","19":"want","20":"can","21":"can","22":"rathernot","23":"cannot","24":"want","25":"can","26":"can","27":"rathernot","28":"cannot","29":"want","30":"can","31":"can"}
+    },
+    "f5": {
+      "name": "Julius",
+      "personId": "f5",
+      "prefs": {"6":"want"}
+    }
+  },
+  "schedule": {
+    "assignments": {"1":["f5"],"2":["f5"],"3":["f2"],"4":["f4"],"5":["f1"],"6":["f5"],"7":["f5"],"8":["f2"],"9":["f4"],"10":["f1"],"11":["f3"],"12":["f3"],"13":["f2"],"14":["f4"],"15":["f1"],"16":["f3"],"17":["f5"],"18":["f2"],"19":["f4"],"20":["f1"],"21":["f3"],"22":["f3"],"23":["f2"],"24":["f4"],"25":["f1"],"26":["f3"],"27":["f5"],"28":["f2"],"29":["f4"],"30":["f1"],"31":["f3"]},
+    "finalized": true,
+    "generatedAt": 1788874815850,
+    "slotsPerDay": 1,
+    "stats": {
+      "f1": {"rathernotAssigned":0,"shifts":6,"unanswered":0,"wantMet":6},
+      "f2": {"rathernotAssigned":0,"shifts":6,"unanswered":0,"wantMet":6},
+      "f3": {"rathernotAssigned":0,"shifts":7,"unanswered":0,"wantMet":5},
+      "f4": {"rathernotAssigned":0,"shifts":6,"unanswered":0,"wantMet":6},
+      "f5": {"rathernotAssigned":0,"shifts":6,"unanswered":30,"wantMet":1}
+    },
+    "unfilled": []
+  }
+}

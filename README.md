@@ -29,6 +29,19 @@ Startet `netlify dev` (Netlify CLI) — simuliert Functions und Blobs lokal und 
 
 Netlify Blobs braucht keine extra Einrichtung — steht automatisch zur Verfügung, sobald die Seite über Netlify deployt ist.
 
+## Demodaten aus dem Claude Artifact übernehmen
+
+`scripts/migration-data.json` enthält den Team-/Wunsch-/Dienstplan-Stand aus der ursprünglichen
+Claude-Artifact-Demo. Einmal nach dem ersten erfolgreichen Deploy ausführen:
+
+```bash
+node scripts/migrate-from-artifact.js https://schichtplan-marcel-test.netlify.app
+```
+
+Meldet sich mit dem Default-Passwort an (`marcel123`, oder per `ADMIN_PASSWORD=...` vorangestellt,
+falls es schon geändert wurde) und überträgt Team, Planungszeitraum, alle Wunsch-Einträge und den
+Dienstplan. Danach nicht mehr nötig.
+
 ## Datenmodell (Netlify Blobs, Store `dienstplan-station`)
 
 | Key | Inhalt |
