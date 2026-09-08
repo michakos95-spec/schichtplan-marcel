@@ -27,7 +27,20 @@ Startet `netlify dev` (Netlify CLI) — simuliert Functions und Blobs lokal und 
 2. Im Netlify-Projekt unter **Site configuration → Environment variables** optional `ADMIN_PASSWORD_DEFAULT` setzen (Fallback-Passwort, falls noch kein Passwort in Blobs gespeichert ist — ohne diese Variable gilt `marcel123`).
 3. Deploy anstoßen (passiert bei einem verknüpften Git-Repo automatisch bei jedem Push auf den Hauptbranch).
 
-Netlify Blobs braucht keine extra Einrichtung — steht automatisch zur Verfügung, sobald die Seite über Netlify deployt ist.
+Netlify Blobs braucht normalerweise keine extra Einrichtung — steht automatisch zur Verfügung, sobald die Seite über Netlify deployt ist. Auf manchen Sites injiziert Netlify den dafür nötigen Kontext aber nicht automatisch in die Functions; das äußert sich als `MissingBlobsEnvironmentError` beim Aufruf einer Function. Siehe dazu den nächsten Abschnitt.
+
+### Falls `MissingBlobsEnvironmentError` auftritt
+
+Fehlermeldung etwa: `The environment has not been configured to use Netlify Blobs. To use it manually, supply the following properties when creating a store: siteID, token`.
+
+Fallback: Site-ID und ein Personal Access Token manuell als Umgebungsvariablen setzen — der Code in `netlify/functions/_lib/blobStore.js` nutzt sie automatisch, sobald sie da sind.
+
+1. **Site-ID besorgen:** Im Netlify-Dashboard → **Site configuration** → **General** → **Project details** → Feld **„Project ID" (auch „Site ID" genannt)** kopieren.
+2. **Personal Access Token erzeugen:** Oben rechts auf den eigenen Account-Namen/Avatar klicken → **User settings** → **Applications** → Abschnitt **Personal access tokens** → **„New access token"** → Namen vergeben (z. B. `schichtplan-blobs`) → Token generieren und **sofort kopieren** (wird nur einmal angezeigt).
+3. **Beide Werte als Umgebungsvariablen setzen:** Site configuration → **Environment variables** → **„Add a variable"**:
+   - `NETLIFY_BLOBS_SITE_ID` = die Site-ID aus Schritt 1
+   - `NETLIFY_BLOBS_TOKEN` = das Token aus Schritt 2
+4. **Neu deployen** — Umgebungsvariablen wirken erst nach einem neuen Deploy (Tab **Deploys** → **„Trigger deploy"** → **„Deploy site"**).
 
 ## Demodaten aus dem Claude Artifact übernehmen
 

@@ -2,7 +2,15 @@ const { getStore } = require("@netlify/blobs");
 
 const STORE_NAME = "dienstplan-station";
 
+// Auf manchen Sites/Deploys injiziert Netlify den Blobs-Kontext nicht automatisch in die
+// Function-Umgebung ("MissingBlobsEnvironmentError"). Fallback: siteID + Personal Access Token
+// explizit über Umgebungsvariablen mitgeben (siehe README, Abschnitt "Netlify Blobs Fehler").
 function store() {
+  const siteID = process.env.NETLIFY_BLOBS_SITE_ID;
+  const token = process.env.NETLIFY_BLOBS_TOKEN;
+  if (siteID && token) {
+    return getStore({ name: STORE_NAME, siteID, token });
+  }
   return getStore(STORE_NAME);
 }
 
