@@ -1,0 +1,967 @@
+<title>Dienstplan Station</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --ink:#001925;
+    --ink-soft:#5C6E77;
+    --paper:#F3F7F9;
+    --surface:#FFFFFF;
+    --surface-2:#E4ECF0;
+    --line:#CBD9E0;
+    --accent:#004A6F;
+    --accent-strong:#326C9A;
+    --accent-contrast:#FFFFFF;
+    --accent-2:#F0834A;
+    --accent-2-soft:#FCE4D6;
+    --pref-want:#2E7D46;
+    --pref-want-soft:#DCEEE1;
+    --pref-can:#3667A6;
+    --pref-can-soft:#DEE7F3;
+    --pref-rathernot:#B07A1E;
+    --pref-rathernot-soft:#F3E7CE;
+    --pref-cannot:#A93A34;
+    --pref-cannot-soft:#F4DEDC;
+    --pref-none:#8A9490;
+    --pref-none-soft:#E5E9E7;
+    --shadow-card: 0 1px 2px rgba(0,25,37,.05), 0 4px 14px rgba(0,25,37,.06);
+    color-scheme: light;
+  }
+  /* Deliberately single-theme: mirrors the Uniklinik Heidelberg system, which is light-only. */
+
+  *{box-sizing:border-box;}
+  body{background:var(--paper); color:var(--ink); font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif; margin:0;}
+  h1,h2,h3{font-family:"IBM Plex Sans", ui-sans-serif, system-ui, sans-serif; font-weight:700; letter-spacing:-.01em; text-wrap:balance; margin:0;}
+  .mono{font-family:"IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums;}
+  button{font-family:inherit; cursor:pointer;}
+  input, select{font-family:inherit;}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .app{max-width:1180px; margin:0 auto; padding:28px 20px 60px;}
+
+  .topbar{background:var(--accent); border-bottom:3px solid var(--accent-2);}
+  .topbar-inner{max-width:1180px; margin:0 auto; padding:18px 20px; display:flex; align-items:center; gap:20px; flex-wrap:wrap;}
+  .brand{display:flex; align-items:center; gap:14px;}
+  .brand-mark{width:42px; height:42px; border-radius:6px; background:#FFFFFF; color:var(--accent); font-family:"IBM Plex Sans", sans-serif; font-weight:700; font-size:16px; display:flex; align-items:center; justify-content:center; letter-spacing:.02em; flex-shrink:0;}
+  .brand-text h1{font-size:21px; line-height:1.2; color:#FFFFFF;}
+  .brand-text h1 .station{color:var(--accent-2); font-weight:700;}
+  .tagline{margin:2px 0 0; font-size:12.5px; color:rgba(255,255,255,.72);}
+
+  .tabs{background:var(--surface); border-bottom:1px solid var(--line);}
+  .tabs-inner{max-width:1180px; margin:0 auto; padding:0 20px; display:flex; gap:28px;}
+  .tab-btn{border:none; background:transparent; color:var(--ink-soft); font-size:14px; font-weight:600; padding:14px 2px; border-bottom:3px solid transparent; margin-bottom:-1px;}
+  .tab-btn[aria-selected="true"]{color:var(--accent); border-bottom-color:var(--accent-2);}
+
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:20px; box-shadow:var(--shadow-card);}
+  .stack{display:flex; flex-direction:column; gap:18px;}
+  .row{display:flex; gap:18px; flex-wrap:wrap;}
+  .row > *{flex:1 1 260px;}
+
+  .section-title{font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); font-weight:600; margin:0 0 10px;}
+
+  .pill{display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:600; padding:5px 11px; border-radius:20px;}
+  .pill.open{background:var(--pref-want-soft); color:var(--pref-want);}
+  .pill.closed{background:var(--pref-cannot-soft); color:var(--pref-cannot);}
+  .pill.neutral{background:var(--surface-2); color:var(--ink-soft);}
+  .dot{width:7px; height:7px; border-radius:50%; background:currentColor;}
+
+  label.field{display:flex; flex-direction:column; gap:5px; font-size:12.5px; font-weight:600; color:var(--ink-soft);}
+  input[type="text"], input[type="password"], input[type="date"], input[type="month"], input[type="number"], select{
+    font-size:14px; color:var(--ink); background:var(--paper); border:1px solid var(--line); border-radius:6px; padding:8px 10px;
+  }
+
+  .btn{border:1px solid var(--line); background:var(--surface); color:var(--ink); font-size:13.5px; font-weight:600; padding:9px 16px; border-radius:7px; transition:background .12s ease;}
+  .btn:hover{background:var(--surface-2);}
+  .btn.primary{background:var(--accent); border-color:var(--accent); color:var(--accent-contrast);}
+  .btn.primary:hover{background:var(--accent-strong); border-color:var(--accent-strong);}
+  .btn.danger{color:var(--pref-cannot); border-color:var(--pref-cannot);}
+  .btn:disabled{opacity:.45; cursor:not-allowed;}
+  .btn.small{padding:5px 10px; font-size:12px;}
+
+  .who-select{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+
+  .legend{display:flex; gap:14px; flex-wrap:wrap; font-size:12.5px; color:var(--ink-soft); margin-top:12px;}
+  .legend span{display:inline-flex; align-items:center; gap:6px;}
+  .legend b{width:20px; height:20px; border-radius:5px; display:inline-flex; align-items:center; justify-content:center; font-size:11px; color:var(--accent-contrast);}
+
+  .cal-grid{display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:8px;}
+  .cal-wd{font-size:11px; font-weight:600; text-align:center; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em; padding-bottom:2px;}
+  .cal-blank{visibility:hidden;}
+  .day-cell{border:1px solid var(--line); border-radius:8px; padding:8px; background:var(--paper); display:flex; flex-direction:column; gap:6px; min-height:96px;}
+  .day-cell.scarce{border-color:var(--accent-2);}
+  .day-num{display:flex; justify-content:space-between; align-items:baseline;}
+  .day-num .n{font-family:"IBM Plex Mono", monospace; font-weight:600; font-size:16px;}
+  .day-num .wd{font-size:10px; color:var(--ink-soft); text-transform:uppercase;}
+  .seg{display:grid; grid-template-columns:repeat(4,1fr); gap:3px;}
+  .seg button{border:1px solid var(--line); background:var(--surface); border-radius:5px; font-size:11px; font-weight:700; padding:5px 0; color:var(--ink-soft);}
+  .seg button.active-want{background:var(--pref-want); border-color:var(--pref-want); color:#fff;}
+  .seg button.active-can{background:var(--pref-can); border-color:var(--pref-can); color:#fff;}
+  .seg button.active-rathernot{background:var(--pref-rathernot); border-color:var(--pref-rathernot); color:#fff;}
+  .seg button.active-cannot{background:var(--pref-cannot); border-color:var(--pref-cannot); color:#fff;}
+  .scarce-flag{font-size:10px; color:var(--accent-2); font-weight:700;}
+
+  @media (max-width: 720px){
+    .cal-grid{grid-template-columns:1fr;}
+    .cal-wd{display:none;}
+    .day-cell{flex-direction:row; align-items:center; min-height:unset;}
+    .day-num{flex-direction:column; align-items:flex-start; gap:0; width:52px; flex-shrink:0;}
+    .seg{flex:1;}
+  }
+
+  table.matrix{border-collapse:collapse; width:100%; font-size:12px;}
+  table.matrix th, table.matrix td{border:1px solid var(--line); padding:5px 6px; text-align:center; white-space:nowrap;}
+  table.matrix th{background:var(--surface-2); font-weight:600; color:var(--ink-soft); font-size:11px;}
+  table.matrix td.name-col, table.matrix th.name-col{text-align:left; position:sticky; left:0; background:var(--surface); font-weight:600;}
+  .badge{display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:4px; font-size:10.5px; font-weight:700; color:#fff;}
+  .badge.want{background:var(--pref-want);}
+  .badge.can{background:var(--pref-can);}
+  .badge.rathernot{background:var(--pref-rathernot);}
+  .badge.cannot{background:var(--pref-cannot);}
+  .badge.none{background:var(--pref-none); color:var(--paper);}
+  th.scarce-col{color:var(--accent-2) !important;}
+  .scroll-x{overflow-x:auto; padding-bottom:4px; scrollbar-color: var(--line) var(--surface-2); scrollbar-width: thin;}
+  .scroll-x::-webkit-scrollbar{height:10px;}
+  .scroll-x::-webkit-scrollbar-track{background:var(--surface-2); border-radius:6px;}
+  .scroll-x::-webkit-scrollbar-thumb{background:var(--line); border-radius:6px;}
+  .scroll-x::-webkit-scrollbar-thumb:hover{background:var(--ink-soft);}
+
+  .stat-strip{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px;}
+  .stat-tile{border:1px solid var(--line); border-radius:8px; padding:12px 14px; background:var(--paper);}
+  .stat-tile .num{font-family:"IBM Plex Mono", monospace; font-size:24px; font-weight:700;}
+  .stat-tile .lbl{font-size:11.5px; color:var(--ink-soft); margin-top:2px;}
+  .stat-tile.warn .num{color:var(--accent-2);}
+
+  .roster-cell{border:1px solid var(--line); border-radius:8px; padding:8px; background:var(--paper); min-height:78px; min-width:0; display:flex; flex-direction:column; gap:5px;}
+  .roster-cell .n{font-family:"IBM Plex Mono", monospace; font-weight:600; font-size:12.5px; color:var(--ink-soft);}
+  .chip{border-radius:5px; padding:4px 6px; font-size:11.5px; font-weight:600; display:flex; align-items:center; gap:4px; min-width:0;}
+  .chip.want{background:var(--pref-want-soft); color:var(--pref-want);}
+  .chip.can{background:var(--pref-can-soft); color:var(--pref-can);}
+  .chip.rathernot{background:var(--pref-rathernot-soft); color:var(--pref-rathernot);}
+  .chip.open-slot{background:var(--accent-2-soft); color:var(--accent-2); font-style:normal;}
+  .chip select{border:none; background:transparent; font-size:11px; font-weight:600; color:inherit; width:100%; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+
+  table.fair{border-collapse:collapse; width:100%; font-size:13px;}
+  table.fair th, table.fair td{border-bottom:1px solid var(--line); padding:8px 6px; text-align:left;}
+  table.fair th{color:var(--ink-soft); font-size:11px; text-transform:uppercase; letter-spacing:.04em;}
+  .delta{font-weight:700;}
+  .delta.pos{color:var(--pref-rathernot);}
+  .delta.neg{color:var(--pref-can);}
+  .delta.zero{color:var(--ink-soft);}
+
+  .staff-list{display:flex; flex-direction:column; gap:6px;}
+  .staff-row{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:7px 10px; border:1px solid var(--line); border-radius:6px; font-size:13.5px;}
+  .add-staff{display:flex; gap:8px; margin-top:10px;}
+  .add-staff input{flex:1;}
+
+  .explain{font-size:13.5px; line-height:1.6; color:var(--ink-soft);}
+  .explain strong{color:var(--ink);}
+  details.explain-box{border:1px solid var(--line); border-radius:8px; padding:12px 16px; background:var(--paper);}
+  details.explain-box summary{cursor:pointer; font-weight:600; color:var(--accent-strong); font-size:13.5px;}
+  details.explain-box[open] summary{margin-bottom:8px;}
+
+  .unfilled-banner{background:var(--accent-2-soft); border:1px solid var(--accent-2); color:var(--accent-2); border-radius:8px; padding:10px 14px; font-size:13px; font-weight:600;}
+  .empty-note{font-size:13px; color:var(--ink-soft); font-style:italic;}
+</style>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-mark">DS</span>
+      <div class="brand-text">
+        <h1>Dienstplan <span class="station">Station</span></h1>
+        <p class="tagline">Schichtwünsche erfassen · fair verteilen</p>
+      </div>
+    </div>
+  </div>
+</header>
+<nav class="tabs" role="tablist">
+  <div class="tabs-inner">
+    <button class="tab-btn" data-tab="employee" role="tab" aria-selected="true">Meine Verfügbarkeit</button>
+    <button class="tab-btn" data-tab="admin" role="tab" aria-selected="false">Admin</button>
+  </div>
+</nav>
+<div class="app">
+  <main id="view"></main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const PREF = { WANT:"want", CAN:"can", RATHERNOT:"rathernot", CANNOT:"cannot" };
+  const PREF_LABEL = { want:"Möchte arbeiten", can:"Kann arbeiten", rathernot:"Eher nicht", cannot:"Kann nicht" };
+  const PREF_LETTER = { want:"M", can:"K", rathernot:"E", cannot:"N" };
+  const PREF_ORDER = [PREF.WANT, PREF.CAN, PREF.RATHERNOT, PREF.CANNOT];
+
+  const LS_WHO = "dienstplan-who";
+  const LS_ADMIN_TOKEN = "dienstplan-admin-token";
+  const DEFAULT_ADMIN_PASSWORD = "marcel123"; // nur für die Bestätigungs-Texte; die echte Prüfung läuft serverseitig.
+  const POLL_INTERVAL_MS = 25000;
+
+  let adminToken = localStorage.getItem(LS_ADMIN_TOKEN) || null;
+
+  const App = {
+    tab: "employee",
+    staff: [],
+    state: null,
+    entries: {},   // personId -> {personId, name, prefs, updatedAt}
+    schedule: null,
+    currentUserId: null,
+    scheduleMonth: null, // month the loaded schedule belongs to
+    adminUnlocked: false
+  };
+
+  function newId(){ return "p" + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+  // ---------- backend access (Netlify Functions) ----------
+  async function apiGet(path){
+    const res = await fetch(path);
+    if(!res.ok) throw Object.assign(new Error("Laden fehlgeschlagen (" + res.status + ")"), { status: res.status });
+    const text = await res.text();
+    return text ? JSON.parse(text) : null;
+  }
+  async function apiWrite(method, path, body){
+    const headers = { "Content-Type": "application/json" };
+    if(adminToken) headers["Authorization"] = "Bearer " + adminToken;
+    const res = await fetch(path, { method, headers, body: JSON.stringify(body) });
+    if(!res.ok){
+      let msg = "Anfrage fehlgeschlagen (" + res.status + ")";
+      try { const err = await res.json(); if(err && err.error) msg = err.error; } catch(e){}
+      throw Object.assign(new Error(msg), { status: res.status });
+    }
+    const text = await res.text();
+    return text ? JSON.parse(text) : null;
+  }
+
+  async function getStaff(){ const d = await apiGet("/.netlify/functions/staff"); return (d && d.people) || []; }
+  async function setStaff(people){ await apiWrite("PUT", "/.netlify/functions/staff", { people }); }
+
+  async function getState(){ return await apiGet("/.netlify/functions/state"); }
+  async function setState(state){ await apiWrite("PUT", "/.netlify/functions/state", state); }
+
+  async function getEntries(month){ return (await apiGet("/.netlify/functions/entries?month=" + encodeURIComponent(month))) || {}; }
+  async function setEntry(month, personId, data){
+    await apiWrite("PUT", "/.netlify/functions/entries?month=" + encodeURIComponent(month) + "&personId=" + encodeURIComponent(personId), data);
+  }
+
+  async function getSchedule(month){ return await apiGet("/.netlify/functions/schedule?month=" + encodeURIComponent(month)); }
+  async function setSchedule(month, data){ await apiWrite("PUT", "/.netlify/functions/schedule?month=" + encodeURIComponent(month), data); }
+
+  async function adminLogin(password){
+    const data = await apiWrite("POST", "/.netlify/functions/auth-login", { password });
+    adminToken = data.token;
+    localStorage.setItem(LS_ADMIN_TOKEN, adminToken);
+  }
+  function adminLogout(){
+    adminToken = null;
+    localStorage.removeItem(LS_ADMIN_TOKEN);
+  }
+  async function changeAdminPassword(newPassword){
+    await apiWrite("POST", "/.netlify/functions/auth-change-password", { newPassword });
+  }
+  async function resetDemo(){
+    await apiWrite("POST", "/.netlify/functions/reset-demo", {});
+  }
+
+  // Bei abgelaufenem/ungültigem Token: abmelden und zum Login zurück, statt eine kryptische Fehlermeldung zu zeigen.
+  function handleWriteError(err){
+    if(err && err.status === 401){
+      adminLogout();
+      App.adminUnlocked = false;
+      render();
+      return true;
+    }
+    alert(err && err.message ? err.message : "Etwas ist schiefgelaufen.");
+    return false;
+  }
+
+  // ---------- date helpers ----------
+  function daysInMonth(month){ const [y,m] = month.split("-").map(Number); return new Date(y, m, 0).getDate(); }
+  function firstWeekdayMon0(month){ const [y,m] = month.split("-").map(Number); const d = new Date(y, m-1, 1).getDay(); return (d + 6) % 7; }
+  function weekdayShort(month, day){ const [y,m] = month.split("-").map(Number); return new Date(y, m-1, day).toLocaleDateString("de-DE", { weekday:"short" }); }
+  function monthLabel(month){ if(!month) return ""; const [y,m] = month.split("-").map(Number); return new Date(y, m-1, 1).toLocaleDateString("de-DE", { month:"long", year:"numeric" }); }
+  function fmtDate(iso){ if(!iso) return "–"; const [y,m,d] = iso.split("-"); return d + "." + m + "." + y; }
+
+  // ---------- scheduling algorithm ----------
+  function effectivePref(prefs, day){
+    return (prefs && prefs[day]) || null; // null = unanswered, treated as "can" for eligibility
+  }
+  function isEligible(prefs, day){
+    const p = effectivePref(prefs, day);
+    return p !== PREF.CANNOT;
+  }
+  function prefRank(prefs, day){
+    const p = effectivePref(prefs, day);
+    if(p === PREF.WANT) return 0;
+    if(p === PREF.RATHERNOT) return 2;
+    return 1; // "can" or unanswered
+  }
+
+  function computeStats(staff, entries, assignments, days){
+    const prefsOf = pid => (entries[pid] && entries[pid].prefs) || {};
+    const stats = {};
+    staff.forEach(p => {
+      const prefs = prefsOf(p.id);
+      let shifts=0, wantMet=0, rathernotAssigned=0, unanswered=0;
+      days.forEach(d => {
+        const eff = effectivePref(prefs, d);
+        if(eff === null) unanswered++;
+        if((assignments[d]||[]).includes(p.id)){
+          shifts++;
+          if(eff === PREF.WANT) wantMet++;
+          if(eff === PREF.RATHERNOT) rathernotAssigned++;
+        }
+      });
+      stats[p.id] = { shifts, wantMet, rathernotAssigned, unanswered };
+    });
+    return stats;
+  }
+
+  function generateSchedule(staff, entries, month, slotsPerDay){
+    const n = daysInMonth(month);
+    const days = Array.from({length:n}, (_,i)=>i+1);
+    const shiftsCount = {}; staff.forEach(p => shiftsCount[p.id] = 0);
+    const assignedDay = {}; // personId -> Set(days) already assigned (only relevant if slotsPerDay>1)
+    staff.forEach(p => assignedDay[p.id] = new Set());
+    const assignments = {}; days.forEach(d => assignments[d] = []);
+
+    const prefsOf = pid => (entries[pid] && entries[pid].prefs) || {};
+
+    // scarcity: fewer eligible candidates = filled first
+    const scarcity = days.map(d => {
+      const elig = staff.filter(p => isEligible(prefsOf(p.id), d));
+      return { day:d, eligibleCount: elig.length };
+    }).sort((a,b) => a.eligibleCount - b.eligibleCount || a.day - b.day);
+
+    scarcity.forEach(({day}) => {
+      const pool = staff.filter(p => isEligible(prefsOf(p.id), day) && !assignedDay[p.id].has(day));
+      pool.sort((a,b) => {
+        const ra = prefRank(prefsOf(a.id), day), rb = prefRank(prefsOf(b.id), day);
+        if(ra !== rb) return ra - rb;
+        if(shiftsCount[a.id] !== shiftsCount[b.id]) return shiftsCount[a.id] - shiftsCount[b.id];
+        return a.name.localeCompare(b.name, "de");
+      });
+      const need = slotsPerDay;
+      const chosen = pool.slice(0, need);
+      chosen.forEach(p => {
+        assignments[day].push(p.id);
+        assignedDay[p.id].add(day);
+        shiftsCount[p.id]++;
+      });
+    });
+
+    // fairness balancing pass: swap shifts from most-loaded to least-loaded where eligible
+    let iterations = 0;
+    const maxIterations = staff.length * 40 + 200;
+    while(iterations < maxIterations){
+      iterations++;
+      const ranked = staff.slice().sort((a,b) => shiftsCount[a.id]-shiftsCount[b.id]);
+      let swapped = false;
+      outer:
+      for(let li=0; li<ranked.length; li++){
+        const low = ranked[li];
+        for(let hi=ranked.length-1; hi>li; hi--){
+          const high = ranked[hi];
+          if(shiftsCount[high.id] - shiftsCount[low.id] < 2) continue;
+          for(const day of days){
+            if(!assignments[day].includes(high.id)) continue;
+            if(assignedDay[low.id].has(day)) continue;
+            if(!isEligible(prefsOf(low.id), day)) continue;
+            const idx = assignments[day].indexOf(high.id);
+            assignments[day][idx] = low.id;
+            assignedDay[high.id].delete(day);
+            assignedDay[low.id].add(day);
+            shiftsCount[high.id]--; shiftsCount[low.id]++;
+            swapped = true;
+            break outer;
+          }
+        }
+      }
+      if(!swapped) break;
+    }
+
+    const stats = computeStats(staff, entries, assignments, days);
+    const unfilled = days.filter(d => assignments[d].length < slotsPerDay);
+
+    return { assignments, stats, unfilled, slotsPerDay, generatedAt: Date.now(), finalized:false };
+  }
+
+  // ---------- rendering ----------
+  const view = document.getElementById("view");
+
+  function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+  function windowPill(open){
+    return open
+      ? `<span class="pill open"><span class="dot"></span>Meldezeitraum offen</span>`
+      : `<span class="pill closed"><span class="dot"></span>Meldezeitraum geschlossen</span>`;
+  }
+
+  function renderEmployeeTab(){
+    const st = App.state;
+    if(!st){ view.innerHTML = `<div class="card"><p class="empty-note">Noch keine Planung angelegt.</p></div>`; return; }
+    const month = st.planningMonth;
+    const staff = App.staff;
+    const savedWho = App.currentUserId || localStorage.getItem(LS_WHO) || (staff[0] && staff[0].id);
+    App.currentUserId = savedWho;
+    const me = staff.find(p => p.id === savedWho);
+    const myEntry = App.entries[savedWho];
+    const myPrefs = (myEntry && myEntry.prefs) || {};
+
+    const n = daysInMonth(month);
+    const lead = firstWeekdayMon0(month);
+    const wdLabels = ["Mo","Di","Mi","Do","Fr","Sa","So"];
+
+    function eligibleCount(day){
+      return staff.filter(p => {
+        const pr = (App.entries[p.id] && App.entries[p.id].prefs) || {};
+        return isEligible(pr, day);
+      }).length;
+    }
+
+    let cells = "";
+    for(let i=0;i<lead;i++) cells += `<div class="day-cell cal-blank"></div>`;
+    for(let d=1; d<=n; d++){
+      const cur = myPrefs[d] || null;
+      const elig = eligibleCount(d);
+      const scarce = elig <= Math.ceil(staff.length/2) && elig < staff.length;
+      cells += `
+        <div class="day-cell ${scarce ? "scarce":""}">
+          <div class="day-num">
+            <span class="n mono">${d}</span>
+            <span class="wd">${weekdayShort(month,d)}</span>
+          </div>
+          <div class="seg" data-day="${d}">
+            ${PREF_ORDER.map(p => `<button data-pref="${p}" class="${cur===p ? "active-"+p : ""}" title="${PREF_LABEL[p]}">${PREF_LETTER[p]}</button>`).join("")}
+          </div>
+          ${scarce ? `<span class="scarce-flag">wenig Personal verfügbar</span>` : ""}
+        </div>`;
+    }
+
+    const answered = Object.keys(myPrefs).length;
+
+    view.innerHTML = `
+      <div class="stack">
+        <div class="card">
+          <div class="row" style="align-items:center;">
+            <div class="who-select">
+              <label class="field" style="min-width:220px;">
+                Wer bist du?
+                <select id="whoSelect">
+                  ${staff.map(p => `<option value="${p.id}" ${p.id===savedWho?"selected":""}>${esc(p.name)}</option>`).join("")}
+                </select>
+              </label>
+            </div>
+            <div style="margin-left:auto; text-align:right;">
+              ${windowPill(st.windowOpen)}
+              <p class="empty-note" style="margin-top:6px;">Meldezeitraum: ${fmtDate(st.windowStart)} – ${fmtDate(st.windowEnd)}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <p class="section-title">Planungsmonat</p>
+          <h2>${monthLabel(month)}</h2>
+          <p class="empty-note" style="margin-top:6px;">${answered} von ${n} Tagen eingetragen ${me? "· " + esc(me.name):""}</p>
+
+          ${st.windowOpen ? `
+            <div class="cal-grid" style="margin-top:16px;">
+              ${wdLabels.map(w=>`<div class="cal-wd">${w}</div>`).join("")}
+              ${cells}
+            </div>
+            <div class="legend">
+              ${PREF_ORDER.map(p => `<span><b style="background:var(--pref-${p})">${PREF_LETTER[p]}</b> ${PREF_LABEL[p]}</span>`).join("")}
+              <span><b style="background:var(--pref-none)">–</b> Noch nicht eingetragen (zählt als „kann“)</span>
+            </div>
+          ` : `
+            <p class="empty-note" style="margin-top:10px;">Der Meldezeitraum ist geschlossen — deine Wünsche für ${monthLabel(month)} sind gespeichert und werden für die Planung berücksichtigt.</p>
+          `}
+        </div>
+
+        ${renderMySchedule(month, savedWho)}
+      </div>
+    `;
+
+    document.getElementById("whoSelect").addEventListener("change", e => {
+      App.currentUserId = e.target.value;
+      localStorage.setItem(LS_WHO, e.target.value);
+      renderEmployeeTab();
+    });
+
+    if(st.windowOpen){
+      view.querySelectorAll(".seg").forEach(seg => {
+        const day = seg.getAttribute("data-day");
+        seg.querySelectorAll("button").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const pref = btn.getAttribute("data-pref");
+            const existing = App.entries[savedWho];
+            const entry = {
+              personId: savedWho,
+              name: existing ? existing.name : (me ? me.name : ""),
+              prefs: Object.assign({}, existing && existing.prefs),
+              updatedAt: Date.now()
+            };
+            entry.prefs[day] = pref;
+            App.entries[savedWho] = entry;
+            renderEmployeeTab();
+            try { await setEntry(month, savedWho, entry); } catch(e){ alert("Speichern fehlgeschlagen: " + e.message); }
+          });
+        });
+      });
+    }
+  }
+
+  function renderMySchedule(month, personId){
+    if(!App.schedule || App.scheduleMonth !== month || !App.schedule.assignments || !App.schedule.finalized) return "";
+    const days = Object.keys(App.schedule.assignments).map(Number).filter(d => App.schedule.assignments[d].includes(personId)).sort((a,b)=>a-b);
+    if(!days.length){
+      return `<div class="card"><p class="section-title">Meine Schichten — ${monthLabel(month)}</p><p class="empty-note">Für dich sind aktuell keine Schichten eingeteilt.</p></div>`;
+    }
+    return `
+      <div class="card">
+        <p class="section-title">Meine Schichten — ${monthLabel(month)}</p>
+        <div class="row" style="gap:8px;">
+          ${days.map(d => `<span class="chip can mono" style="flex:0 0 auto;">${d}. ${monthLabel(month).split(" ")[0].slice(0,3)}</span>`).join("")}
+        </div>
+      </div>`;
+  }
+
+  function renderAdminGate(){
+    view.innerHTML = `
+      <div class="card" style="max-width:360px; margin:40px auto;">
+        <p class="section-title">Admin-Bereich</p>
+        <h2>Anmelden</h2>
+        <p class="empty-note" style="margin:8px 0 16px;">Dieser Bereich ist für die Dienstplanung durch Marcel reserviert.</p>
+        <label class="field">Passwort
+          <input type="password" id="adminPw" placeholder="Passwort eingeben">
+        </label>
+        <p class="empty-note" id="adminPwError" style="color:var(--pref-cannot); display:none; margin:-4px 0 10px;">Falsches Passwort.</p>
+        <button class="btn primary" id="adminLoginBtn" style="width:100%;">Anmelden</button>
+      </div>
+    `;
+    const pwInput = document.getElementById("adminPw");
+    const errEl = document.getElementById("adminPwError");
+    const loginBtn = document.getElementById("adminLoginBtn");
+    async function attempt(){
+      errEl.style.display = "none";
+      loginBtn.disabled = true;
+      try {
+        await adminLogin(pwInput.value);
+        App.adminUnlocked = true;
+        render();
+      } catch(e){
+        errEl.textContent = e.status === 401 ? "Falsches Passwort." : ("Anmeldung fehlgeschlagen: " + e.message);
+        errEl.style.display = "block";
+        pwInput.value = "";
+        pwInput.focus();
+      } finally {
+        loginBtn.disabled = false;
+      }
+    }
+    loginBtn.addEventListener("click", attempt);
+    pwInput.addEventListener("keydown", e => { if(e.key === "Enter") attempt(); });
+    pwInput.focus();
+  }
+
+  function renderAdminTab(){
+    const st = App.state;
+    if(!st){ view.innerHTML = `<div class="card"><p class="empty-note">Noch keine Planung angelegt.</p></div>`; return; }
+    const month = st.planningMonth;
+    const staff = App.staff;
+    const n = daysInMonth(month);
+    const days = Array.from({length:n}, (_,i)=>i+1);
+    const answeredCount = staff.filter(p => App.entries[p.id] && Object.keys(App.entries[p.id].prefs||{}).length > 0).length;
+
+    function eligibleCount(day){
+      return staff.filter(p => {
+        const pr = (App.entries[p.id] && App.entries[p.id].prefs) || {};
+        return isEligible(pr, day);
+      }).length;
+    }
+
+    const matrixRows = staff.map(p => {
+      const prefs = (App.entries[p.id] && App.entries[p.id].prefs) || {};
+      const cells = days.map(d => {
+        const val = prefs[d];
+        const cls = val || "none";
+        return `<td><span class="badge ${cls}">${val ? PREF_LETTER[val] : "–"}</span></td>`;
+      }).join("");
+      return `<tr><td class="name-col">${esc(p.name)}</td>${cells}</tr>`;
+    }).join("");
+
+    const headerCells = days.map(d => {
+      const elig = eligibleCount(d);
+      const scarce = elig <= Math.ceil(staff.length/2) && elig < staff.length;
+      return `<th class="mono ${scarce ? "scarce-col":""}" title="${elig} verfügbar">${d}</th>`;
+    }).join("");
+
+    const sched = (App.scheduleMonth === month) ? App.schedule : null;
+
+    view.innerHTML = `
+      <div class="stack">
+        <div class="card">
+          <div class="row" style="align-items:center;">
+            <div>
+              <p class="section-title">Admin</p>
+              <p class="empty-note">Angemeldet — dieser Bereich ist passwortgeschützt.</p>
+            </div>
+            <button class="btn small" id="adminLogoutBtn" style="margin-left:auto;">Abmelden</button>
+          </div>
+          <div class="row" style="gap:10px; margin-top:12px; align-items:flex-end;">
+            <label class="field" style="flex:2;">Passwort ändern
+              <input type="password" id="newAdminPw" placeholder="Neues Passwort">
+            </label>
+            <button class="btn" id="changeAdminPwBtn">Speichern</button>
+          </div>
+          <p class="empty-note" id="pwChangeMsg" style="display:none; margin-top:8px;">Passwort aktualisiert.</p>
+        </div>
+
+        <div class="row">
+          <div class="card">
+            <p class="section-title">Team</p>
+            <div class="staff-list">
+              ${staff.map(p => `
+                <div class="staff-row">
+                  <span>${esc(p.name)}</span>
+                  <button class="btn small danger" data-remove="${p.id}">Entfernen</button>
+                </div>`).join("")}
+            </div>
+            <div class="add-staff">
+              <input type="text" id="newStaffName" placeholder="Name hinzufügen…">
+              <button class="btn" id="addStaffBtn">+</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <p class="section-title">Planungszeitraum</p>
+            <div class="stack" style="gap:12px;">
+              <label class="field">Planungsmonat
+                <input type="month" id="planningMonth" value="${month}">
+              </label>
+              <div class="row" style="gap:10px;">
+                <label class="field">Meldezeitraum von
+                  <input type="date" id="windowStart" value="${st.windowStart||""}">
+                </label>
+                <label class="field">bis
+                  <input type="date" id="windowEnd" value="${st.windowEnd||""}">
+                </label>
+              </div>
+              <label class="field">Personal pro Tag
+                <input type="number" id="slotsPerDay" min="1" max="6" value="${st.slotsPerDay||1}">
+              </label>
+              <div class="row" style="align-items:center;">
+                ${windowPill(st.windowOpen)}
+                <button class="btn ${st.windowOpen ? "danger":"primary"}" id="toggleWindow" style="margin-left:auto;">
+                  ${st.windowOpen ? "Meldezeitraum schließen" : "Meldezeitraum öffnen"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <p class="section-title">Wunscheingaben — ${monthLabel(month)}</p>
+          <p class="empty-note" style="margin-bottom:10px;">${answeredCount} von ${staff.length} haben (mind. teilweise) geantwortet · orange markierte Tage haben wenig verfügbares Personal.</p>
+          <div class="scroll-x">
+            <table class="matrix">
+              <thead><tr><th class="name-col">Name</th>${headerCells}</tr></thead>
+              <tbody>${matrixRows}</tbody>
+            </table>
+          </div>
+          <div class="legend">
+            ${PREF_ORDER.map(p => `<span><b style="background:var(--pref-${p})">${PREF_LETTER[p]}</b> ${PREF_LABEL[p]}</span>`).join("")}
+            <span><b style="background:var(--pref-none)">–</b> keine Antwort</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="row" style="align-items:center;">
+            <div>
+              <p class="section-title">Dienstplan</p>
+              <p class="empty-note">${st.windowOpen ? "Meldezeitraum ist noch offen — Plan kann erst nach dem Schließen erzeugt werden." : (sched ? "Entwurf erzeugt am " + new Date(sched.generatedAt).toLocaleString("de-DE") : "Noch kein Plan erzeugt.")}</p>
+            </div>
+            <button class="btn primary" id="generateBtn" style="margin-left:auto;" ${st.windowOpen ? "disabled":""}>Dienstplan generieren</button>
+          </div>
+          <details class="explain-box" style="margin-top:14px;">
+            <summary>So funktioniert die Zuteilung</summary>
+            <p class="explain">
+              <strong>1. Schritt — knappe Tage zuerst:</strong> Tage, an denen viele „Kann nicht“ eingetragen haben, werden zuerst besetzt, solange noch genug Auswahl da ist.
+              Dabei bekommt „Möchte“ Vorrang vor „Kann“, und „Eher nicht“ wird nur eingeteilt, wenn es nicht anders geht.<br>
+              <strong>2. Schritt — Ausgleich:</strong> Anschließend wird verglichen, wer wie viele Schichten hat. Ist jemand deutlich mehr eingeteilt als jemand anderes,
+              wird nach tauschbaren Schichten gesucht — eine Schicht wandert von der am stärksten zur am schwächsten ausgelasteten Person, sofern diese an dem Tag
+              nicht „Kann nicht“ eingetragen hat.<br>
+              <strong>Kann-nicht-Angaben werden nie verletzt.</strong> Bleibt ein Tag trotzdem offen, wird das unten angezeigt und muss manuell geklärt werden.
+            </p>
+          </details>
+          ${sched ? renderScheduleResult(month, sched, staff) : ""}
+        </div>
+
+        <div class="card">
+          <button class="btn danger small" id="resetBtn">Demo zurücksetzen</button>
+        </div>
+      </div>
+    `;
+
+    bindAdminHandlers(month, staff);
+  }
+
+  function renderScheduleResult(month, sched, staff){
+    const n = daysInMonth(month);
+    const lead = firstWeekdayMon0(month);
+    const wdLabels = ["Mo","Di","Mi","Do","Fr","Sa","So"];
+    const byId = {}; staff.forEach(p => byId[p.id]=p);
+
+    function chipClassFor(day, pid){
+      const prefs = (App.entries[pid] && App.entries[pid].prefs) || {};
+      const eff = prefs[day];
+      if(eff === PREF.WANT) return "want";
+      if(eff === PREF.RATHERNOT) return "rathernot";
+      return "can";
+    }
+
+    let cells = "";
+    for(let i=0;i<lead;i++) cells += `<div class="roster-cell" style="visibility:hidden;"></div>`;
+    for(let d=1; d<=n; d++){
+      const assigned = sched.assignments[d] || [];
+      const slotsHtml = [];
+      for(let s=0; s<sched.slotsPerDay; s++){
+        const pid = assigned[s];
+        if(pid){
+          const cls = chipClassFor(d, pid);
+          slotsHtml.push(`<div class="chip ${cls}" title="${esc(byId[pid] ? byId[pid].name : "?")}">
+            <select data-reassign-day="${d}" data-slot="${s}">
+              ${staff.map(p => `<option value="${p.id}" ${p.id===pid?"selected":""}>${esc(p.name)}</option>`).join("")}
+            </select>
+          </div>`);
+        } else {
+          slotsHtml.push(`<div class="chip open-slot">
+            <select data-reassign-day="${d}" data-slot="${s}">
+              <option value="">— offen —</option>
+              ${staff.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join("")}
+            </select>
+          </div>`);
+        }
+      }
+      cells += `<div class="roster-cell"><span class="n">${d}. ${weekdayShort(month,d)}</span>${slotsHtml.join("")}</div>`;
+    }
+
+    const avg = staff.length ? (staff.reduce((sum,p)=>sum+(sched.stats[p.id]?sched.stats[p.id].shifts:0),0) / staff.length) : 0;
+
+    const statRows = staff.map(p => {
+      const s = sched.stats[p.id] || {shifts:0,wantMet:0,rathernotAssigned:0,unanswered:0};
+      const delta = s.shifts - avg;
+      const deltaCls = Math.abs(delta) < 0.51 ? "zero" : (delta > 0 ? "pos" : "neg");
+      return `<tr>
+        <td>${esc(p.name)}</td>
+        <td class="mono">${s.shifts}</td>
+        <td class="mono">${s.wantMet}</td>
+        <td class="mono">${s.rathernotAssigned}</td>
+        <td class="delta ${deltaCls} mono">${delta>0?"+":""}${delta.toFixed(1)}</td>
+      </tr>`;
+    }).join("");
+
+    return `
+      <div class="stack" style="margin-top:16px;">
+        ${sched.unfilled.length ? `<div class="unfilled-banner">${sched.unfilled.length} Tag(e) konnten nicht vollständig besetzt werden: ${sched.unfilled.join(", ")}. Bitte manuell zuweisen.</div>` : ""}
+
+        <div class="stat-strip">
+          <div class="stat-tile"><div class="num mono">${staff.length}</div><div class="lbl">Team­mitglieder</div></div>
+          <div class="stat-tile"><div class="num mono">${avg.toFixed(1)}</div><div class="lbl">Ø Schichten / Person</div></div>
+          <div class="stat-tile ${sched.unfilled.length?"warn":""}"><div class="num mono">${sched.unfilled.length}</div><div class="lbl">offene Tage</div></div>
+        </div>
+
+        <div class="scroll-x">
+          <div class="cal-grid">
+            ${wdLabels.map(w=>`<div class="cal-wd">${w}</div>`).join("")}
+            ${cells}
+          </div>
+        </div>
+
+        <div class="scroll-x">
+          <table class="fair">
+            <thead><tr><th>Name</th><th>Schichten</th><th>„Möchte“ erfüllt</th><th>„Eher nicht“ trotzdem</th><th>Abw. vom Ø</th></tr></thead>
+            <tbody>${statRows}</tbody>
+          </table>
+        </div>
+
+        <div class="row" style="align-items:center;">
+          <button class="btn primary" id="finalizeBtn" ${sched.finalized ? "disabled":""}>
+            ${sched.finalized ? "Plan ist freigegeben" : "Plan freigeben"}
+          </button>
+          <button class="btn" id="regenerateBtn">Neu generieren</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function bindAdminHandlers(month, staff){
+    document.getElementById("adminLogoutBtn").addEventListener("click", () => {
+      adminLogout();
+      App.adminUnlocked = false;
+      App.tab = "employee";
+      render();
+    });
+    document.getElementById("changeAdminPwBtn").addEventListener("click", async () => {
+      const input = document.getElementById("newAdminPw");
+      const val = input.value.trim();
+      if(!val) return;
+      try {
+        await changeAdminPassword(val);
+        input.value = "";
+        document.getElementById("pwChangeMsg").style.display = "block";
+      } catch(e){ handleWriteError(e); }
+    });
+
+    view.querySelectorAll("[data-remove]").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-remove");
+        const next = App.staff.filter(p => p.id !== id);
+        App.staff = next;
+        renderAdminTab();
+        try { await setStaff(next); } catch(e){ handleWriteError(e); }
+      });
+    });
+    const addBtn = document.getElementById("addStaffBtn");
+    addBtn.addEventListener("click", async () => {
+      const input = document.getElementById("newStaffName");
+      const name = input.value.trim();
+      if(!name) return;
+      const next = App.staff.concat([{ id:newId(), name }]);
+      App.staff = next;
+      renderAdminTab();
+      try { await setStaff(next); } catch(e){ handleWriteError(e); }
+    });
+
+    document.getElementById("planningMonth").addEventListener("change", async e => {
+      const nextState = Object.assign({}, App.state, { planningMonth: e.target.value, updatedAt: Date.now() });
+      App.state = nextState;
+      try {
+        await setState(nextState);
+        await loadMonthData(nextState.planningMonth);
+      } catch(err){ handleWriteError(err); }
+      renderAdminTab();
+    });
+    document.getElementById("windowStart").addEventListener("change", async e => {
+      const nextState = Object.assign({}, App.state, { windowStart: e.target.value, updatedAt: Date.now() });
+      App.state = nextState; renderAdminTab();
+      try { await setState(nextState); } catch(err){ handleWriteError(err); }
+    });
+    document.getElementById("windowEnd").addEventListener("change", async e => {
+      const nextState = Object.assign({}, App.state, { windowEnd: e.target.value, updatedAt: Date.now() });
+      App.state = nextState; renderAdminTab();
+      try { await setState(nextState); } catch(err){ handleWriteError(err); }
+    });
+    document.getElementById("slotsPerDay").addEventListener("change", async e => {
+      const val = Math.max(1, Math.min(6, parseInt(e.target.value,10) || 1));
+      const nextState = Object.assign({}, App.state, { slotsPerDay: val, updatedAt: Date.now() });
+      App.state = nextState; renderAdminTab();
+      try { await setState(nextState); } catch(err){ handleWriteError(err); }
+    });
+    document.getElementById("toggleWindow").addEventListener("click", async () => {
+      const nextState = Object.assign({}, App.state, { windowOpen: !App.state.windowOpen, updatedAt: Date.now() });
+      App.state = nextState; renderAdminTab();
+      try { await setState(nextState); } catch(err){ handleWriteError(err); }
+    });
+
+    const genBtn = document.getElementById("generateBtn");
+    if(genBtn) genBtn.addEventListener("click", async () => {
+      const sched = generateSchedule(App.staff, App.entries, month, App.state.slotsPerDay || 1);
+      App.schedule = sched; App.scheduleMonth = month;
+      renderAdminTab();
+      try { await setSchedule(month, sched); } catch(e){ handleWriteError(e); }
+    });
+    const regenBtn = document.getElementById("regenerateBtn");
+    if(regenBtn) regenBtn.addEventListener("click", async () => {
+      const sched = generateSchedule(App.staff, App.entries, month, App.state.slotsPerDay || 1);
+      App.schedule = sched; App.scheduleMonth = month;
+      renderAdminTab();
+      try { await setSchedule(month, sched); } catch(e){ handleWriteError(e); }
+    });
+    const finBtn = document.getElementById("finalizeBtn");
+    if(finBtn) finBtn.addEventListener("click", async () => {
+      const sched = Object.assign({}, App.schedule, { finalized:true });
+      App.schedule = sched;
+      renderAdminTab();
+      try { await setSchedule(month, sched); } catch(e){ handleWriteError(e); }
+    });
+
+    view.querySelectorAll("[data-reassign-day]").forEach(sel => {
+      sel.addEventListener("change", async e => {
+        const day = parseInt(e.target.getAttribute("data-reassign-day"),10);
+        const slot = parseInt(e.target.getAttribute("data-slot"),10);
+        const newPid = e.target.value;
+        const sched = Object.assign({}, App.schedule);
+        sched.assignments = Object.assign({}, sched.assignments);
+        const arr = (sched.assignments[day] || []).slice();
+        if(newPid) arr[slot] = newPid; else arr.splice(slot,1);
+        sched.assignments[day] = arr.filter(Boolean);
+        sched.unfilled = Object.keys(sched.assignments).map(Number).filter(d => sched.assignments[d].length < sched.slotsPerDay);
+        const n = daysInMonth(month);
+        sched.stats = computeStats(staff, App.entries, sched.assignments, Array.from({length:n}, (_,i)=>i+1));
+        App.schedule = sched;
+        renderAdminTab();
+        try { await setSchedule(month, sched); } catch(e){ handleWriteError(e); }
+      });
+    });
+
+    const resetBtn = document.getElementById("resetBtn");
+    resetBtn.addEventListener("click", async () => {
+      if(!confirm("Demo wirklich zurücksetzen? Alle Einträge, der Dienstplan und das Admin-Passwort (zurück auf \"" + DEFAULT_ADMIN_PASSWORD + "\") gehen verloren.")) return;
+      try {
+        await resetDemo();
+        await loadAll();
+        render();
+      } catch(e){ handleWriteError(e); }
+    });
+  }
+
+  function render(){
+    if(App.tab === "employee") renderEmployeeTab();
+    else if(App.adminUnlocked) renderAdminTab();
+    else renderAdminGate();
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.setAttribute("aria-selected", btn.getAttribute("data-tab") === App.tab ? "true" : "false");
+    });
+  }
+
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => { App.tab = btn.getAttribute("data-tab"); render(); });
+  });
+
+  // ---------- load & poll ----------
+  async function loadMonthData(month){
+    App.entries = await getEntries(month);
+    App.schedule = await getSchedule(month);
+    App.scheduleMonth = App.schedule ? month : null;
+  }
+
+  async function loadAll(){
+    App.staff = await getStaff();
+    App.state = await getState();
+    if(App.state) await loadMonthData(App.state.planningMonth);
+    else { App.entries = {}; App.schedule = null; App.scheduleMonth = null; }
+  }
+
+  (async function init(){
+    App.adminUnlocked = !!adminToken;
+    try {
+      await loadAll();
+    } catch(e){
+      view.innerHTML = `<div class="card"><p class="empty-note">Daten konnten nicht geladen werden: ${esc(e.message)}. Bitte Seite neu laden.</p></div>`;
+      return;
+    }
+    render();
+
+    // Kein echtes Live-Sync (kein Realtime-Backend) — regelmäßiges Neuladen reicht für einen
+    // monatlichen Dienstplan-Prozess. Während aktiv in ein Feld getippt wird, wird der Re-Render
+    // übersprungen, damit nichts Unfertiges verloren geht.
+    setInterval(async () => {
+      try {
+        await loadAll();
+        const active = document.activeElement;
+        const isTyping = active && ["INPUT","SELECT","TEXTAREA"].includes(active.tagName);
+        if(!isTyping) render();
+      } catch(e){ /* nächster Versuch in POLL_INTERVAL_MS */ }
+    }, POLL_INTERVAL_MS);
+  })();
+})();
+</script>
